@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session";
-import { createPost, listPosts } from "@/lib/store";
+import { createPost, listPosts, getForum, notifiableMembers, db } from "@/lib/store";
+import { sendEmail, newReplyEmailHtml } from "@/lib/email";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const userId = getSessionUserId();
@@ -10,9 +11,25 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const post = createPost({ threadId: params.id, authorId: userId, contentHtml });
 
-  // TODO: כאן המקום לשלוח מייל התראה לחברי הפורום שסימנו notifyOnReply,
-  // וכן מייל ייעודי אם מדובר בתגובה ישירה למישהו (notifyOnMention).
-  // דורש שירות שליחת מיילים (SendGrid / Resend / SES) עם API key ב-env.
+  // שליחת התראת מייל לחברי הפורום שביקשו לקבל עדכון על תגובה חדשה
+  const thread = db().threads.find((t) => t.id === params.id);
+  if (thread) {
+    const forum = getForum(thread.forumId);
+    if (forum) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+      const forumUrl = `${appUrl}/forum/${forum.id}`;
+      const recipients = notifiableMembers(forum.id, userId);
+      await Promise.all(
+        recipients.map((u) =>
+          sendEmail({
+            to: u.email,
+            subject: `תגובה חדשה בפורום "${forum.title}"`,
+            html: newReplyEmailHtml({ forumTitle: forum.title, threadTitle: thread.title, forumUrl, appUrl }),
+          })
+        )
+      );
+    }
+  }
 
   return NextResponse.json({ post, allPosts: listPosts(params.id) });
 }

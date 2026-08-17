@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const googleError = searchParams.get("error");
+  const next = searchParams.get("next") || "/profile";
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +25,7 @@ export default function LoginPage() {
     });
     setBusy(false);
     if (!res.ok) { setError((await res.json()).error || "שגיאה"); return; }
-    router.push("/profile");
+    router.push(next);
     router.refresh();
   }
 
@@ -47,6 +50,7 @@ export default function LoginPage() {
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", marginTop: 4, marginBottom: 16 }} />
 
         {error && <div style={{ color: "var(--danger)", fontSize: 13, marginBottom: 10 }}>{error}</div>}
+        {googleError && <div style={{ color: "var(--danger)", fontSize: 13, marginBottom: 10 }}>{googleError}</div>}
 
         <button type="submit" className="btn-primary" style={{ width: "100%" }} disabled={busy}>
           {busy ? "רגע..." : mode === "login" ? "התחברות" : "הרשמה"}
@@ -54,14 +58,9 @@ export default function LoginPage() {
 
         <div style={{ textAlign: "center", margin: "14px 0", color: "var(--ink-dim)", fontSize: 13 }}>או</div>
 
-        <button
-          type="button"
-          disabled
-          title="דורש חיבור Google OAuth (GOOGLE_CLIENT_ID/SECRET) - ראו README"
-          style={{ width: "100%", opacity: 0.6 }}
-        >
-          התחברות עם Google (דורש הגדרה - ראו README)
-        </button>
+        <a href={`/api/auth/google?next=${encodeURIComponent(next)}`} className="btn" style={{ width: "100%", display: "block", textAlign: "center" }}>
+          התחברות עם Google
+        </a>
       </form>
     </div>
   );

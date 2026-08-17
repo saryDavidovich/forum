@@ -97,6 +97,9 @@ export const uid = () => randomUUID();
 export function findUserById(id: string) {
   return db().users.find((u) => u.id === id);
 }
+export function findUserByGoogleId(googleId: string) {
+  return db().users.find((u) => u.googleId === googleId);
+}
 export function findUserByEmail(email: string) {
   return db().users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 }
@@ -154,6 +157,32 @@ export function createInvite(forumId: string, email: string, name?: string) {
   const invite: Invite = { id: uid(), forumId, email, name, token: uid(), accepted: false };
   db().invites.push(invite);
   return invite;
+}
+
+export function findInviteByToken(token: string) {
+  return db().invites.find((i) => i.token === token);
+}
+export function acceptInvite(token: string, userId: string) {
+  const invite = findInviteByToken(token);
+  if (!invite) return null;
+  if (!isMember(invite.forumId, userId)) {
+    db().members.push({
+      userId, forumId: invite.forumId, role: "MEMBER",
+      notifyOnReply: true, notifyOnMention: true,
+    });
+  }
+  invite.accepted = true;
+  return invite;
+}
+
+// חברי פורום שביקשו לקבל התראת מייל על תגובה חדשה (לא כולל את הכותב עצמו)
+export function notifiableMembers(forumId: string, excludeUserId: string) {
+  const memberRows = db().members.filter(
+    (m) => m.forumId === forumId && m.notifyOnReply && m.userId !== excludeUserId
+  );
+  return memberRows
+    .map((m) => db().users.find((u) => u.id === m.userId))
+    .filter((u): u is User => !!u);
 }
 
 // ---------- Ads ----------

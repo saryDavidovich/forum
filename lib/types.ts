@@ -9,6 +9,7 @@ export interface User {
   name: string;
   email: string;
   passwordHash?: string;
+  googleId?: string;
   isBlocked: boolean;
   createdAt: string;
 }
