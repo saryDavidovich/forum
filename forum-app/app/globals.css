@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;500;600;700&display=swap');
+
+:root {
+  /* פלטה: כחול-חצות עמוק + זהב מושחז, בהשראת תוכנות לימוד עיוניות (לא קרם/טרה-קוטה גנרי) */
+  --navy-950: #0f1b30;
+  --navy-900: #16233d;
+  --navy-800: #1f3358;
+  --navy-700: #2a4370;
+  --gold-600: #a5771f;
+  --gold-500: #c79a34;
+  --gold-100: #f3e6c8;
+  --paper: #f6f4ef;
+  --paper-dim: #ece8dd;
+  --ink: #1c1a15;
+  --ink-dim: #565148;
+  --line: #d8d2c2;
+  --danger: #8c2f2f;
+  --ok: #2f6b3e;
+
+  --radius: 0px; /* קצוות חדים, לא מעוגלים - כמו בתוכנה המצורפת */
+  --shadow-card: 0 1px 0 rgba(15, 27, 48, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  padding: 0;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  direction: rtl;
+  font-family: 'Assistant', system-ui, sans-serif;
+}
+
+h1, h2, h3, .display {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-weight: 700;
+  color: var(--navy-950);
+  margin: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* --- כפתורים מלבניים, קצוות חדים, בהשראת ה-toolbar בתמונה --- */
+button, .btn {
+  font-family: 'Assistant', sans-serif;
+  font-weight: 600;
+  border: 1px solid var(--navy-800);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--navy-950);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+button:hover, .btn:hover { background: var(--navy-900); color: #fff; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--navy-950);
+  color: #fff;
+  border-color: var(--navy-950);
+}
+.btn-primary:hover { background: var(--gold-600); border-color: var(--gold-600); }
+
+.btn-gold {
+  background: var(--gold-500);
+  color: var(--navy-950);
+  border-color: var(--gold-600);
+}
+.btn-gold:hover { background: var(--gold-600); color: #fff; }
+
+.btn-danger { border-color: var(--danger); color: var(--danger); background: var(--paper); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+input, textarea, select {
+  font-family: 'Assistant', sans-serif;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--gold-500);
+  outline-offset: 1px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.topbar {
+  background: var(--navy-950);
+  color: var(--gold-100);
+  border-bottom: 3px solid var(--gold-500);
+}
+
+.chip {
+  display: inline-block;
+  border: 1px solid var(--line);
+  padding: 2px 10px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  border-radius: var(--radius);
+  background: var(--paper-dim);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--navy-700); }
+::-webkit-scrollbar-track { background: var(--paper-dim); }
