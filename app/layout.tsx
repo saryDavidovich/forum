@@ -1,7 +1,7 @@
 import "./globals.css";
 import Link from "next/link";
 import { getSessionUserId } from "@/lib/session";
-import { findUserById } from "@/lib/store";
+import { findUserById, touchPresence } from "@/lib/store";
 import AdminGate from "@/components/AdminGate";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -10,9 +10,10 @@ export const metadata = {
   description: "מערכת פורומים קהילתית",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const userId = getSessionUserId();
-  const user = userId ? findUserById(userId) : null;
+  const user = userId ? await findUserById(userId) : null;
+  if (userId) touchPresence(userId);
 
   return (
     <html lang="he" dir="rtl">

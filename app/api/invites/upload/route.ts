@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "חסר forumId או קובץ" }, { status: 400 });
   }
 
-  const forum = getForum(forumId);
+  const forum = await getForum(forumId);
   if (!forum) return NextResponse.json({ error: "פורום לא נמצא" }, { status: 404 });
 
   const buf = Buffer.from(await file.arrayBuffer());
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   const created = await Promise.all(
     entries.map(async (r) => {
-      const invite = createInvite(forumId, r.email, r.name);
+      const invite = await createInvite(forumId, r.email, r.name);
       const joinUrl = `${appUrl}/join?token=${invite.token}`;
       await sendEmail({
         to: r.email,

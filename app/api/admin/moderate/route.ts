@@ -8,10 +8,10 @@ export async function POST(req: Request) {
   const { action, id, value } = await req.json();
 
   switch (action) {
-    case "blockUser": return NextResponse.json(setUserBlocked(id, value));
-    case "blockThread": return NextResponse.json(setThreadBlocked(id, value));
-    case "blurPost": return NextResponse.json(setPostBlurred(id, value));
-    case "blockForum": return NextResponse.json(setForumBlocked(id, value));
+    case "blockUser": return NextResponse.json(await setUserBlocked(id, value));
+    case "blockThread": return NextResponse.json(await setThreadBlocked(id, value));
+    case "blurPost": return NextResponse.json(await setPostBlurred(id, value));
+    case "blockForum": return NextResponse.json(await setForumBlocked(id, value));
     default: return NextResponse.json({ error: "פעולה לא מוכרת" }, { status: 400 });
   }
 }

@@ -3,23 +3,17 @@
 // לפני עלייה לאוויר עם משתמשים אמיתיים, מומלץ לעבור ל-Postgres (למשל Supabase / Neon / Railway):
 // שנה provider ל-"postgresql" ו-url ל-env("DATABASE_URL") עם מחרוזת חיבור אמיתית.
 
-// הערה: השדות למטה מוגדרים כ-String עם הערה על הערכים האפשריים, כי SQLite
-// (ברירת המחדל לפיתוח מהיר) לא תומך ב-enum באמת. כשתעברו ל-Postgres תוכלו
-// להחזיר אותם ל-enum אמיתי (למשל: memberAccess MemberAccess @default(VIEW_AND_EDIT))
-// ולהוסיף בחזרה את בלוקי ה-enum שהוסרו כאן, לדוגמה:
-// enum MemberAccess { VIEW_ONLY VIEW_AND_EDIT }
-// enum VisitorAccess { NONE VIEW_ONLY VIEW_AND_COMMENT }
-// enum MemberRole { OWNER MEMBER }
-// enum AdType { IMAGE VIDEO LINK }
-// enum AdStatus { PENDING APPROVED REJECTED }
+// הערה: השדות למטה מוגדרים כ-String עם הערה על הערכים האפשריים - זה עובד
+// מצוין גם ב-Postgres, ומאפשר להישאר תואם למבנה שהיה בגרסת הפיתוח.
+// אם תרצה enum אמיתי ברמת בסיס הנתונים בהמשך, אפשר להחליף בקלות.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // לדוגמה: file:./dev.db
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {

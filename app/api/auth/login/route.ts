@@ -5,7 +5,7 @@ import { makeSessionCookieValue, SESSION_COOKIE_NAME } from "@/lib/session";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
-  const user = findUserByEmail(email || "");
+  const user = await findUserByEmail(email || "");
   if (!user || !user.passwordHash) {
     return NextResponse.json({ error: "אימייל או סיסמה שגויים" }, { status: 401 });
   }

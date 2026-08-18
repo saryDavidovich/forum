@@ -4,7 +4,7 @@ import { listAds, createAd, setAdStatus, deleteAd } from "@/lib/store";
 
 export async function GET() {
   if (!isAdminSession()) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
-  return NextResponse.json(listAds());
+  return NextResponse.json(await listAds());
 }
 
 // יצירת פרסומת חדשה (ממתינה לאישור). url יכול להיות קישור לקובץ שהועלה
@@ -13,18 +13,18 @@ export async function POST(req: Request) {
   if (!isAdminSession()) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
   const { type, url, linkUrl } = await req.json();
   if (!type || !url) return NextResponse.json({ error: "נתונים חסרים" }, { status: 400 });
-  return NextResponse.json(createAd({ type, url, linkUrl }));
+  return NextResponse.json(await createAd({ type, url, linkUrl }));
 }
 
 export async function PATCH(req: Request) {
   if (!isAdminSession()) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
   const { id, status } = await req.json();
-  return NextResponse.json(setAdStatus(id, status));
+  return NextResponse.json(await setAdStatus(id, status));
 }
 
 export async function DELETE(req: Request) {
   if (!isAdminSession()) return NextResponse.json({ error: "אין הרשאה" }, { status: 403 });
   const { id } = await req.json();
-  deleteAd(id);
+  await deleteAd(id);
   return NextResponse.json({ ok: true });
 }

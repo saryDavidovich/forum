@@ -3,7 +3,7 @@ import { getSessionUserId } from "@/lib/session";
 import { createForum, listForums } from "@/lib/store";
 
 export async function GET() {
-  return NextResponse.json(listForums());
+  return NextResponse.json(await listForums());
 }
 
 export async function POST(req: Request) {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const { title, description, memberAccess, visitorAccess } = await req.json();
   if (!title) return NextResponse.json({ error: "נא להזין כותרת לפורום" }, { status: 400 });
 
-  const forum = createForum({
+  const forum = await createForum({
     title,
     description: description || "",
     ownerId: userId,

@@ -4,11 +4,12 @@ import { getSessionUserId } from "@/lib/session";
 import { findUserById, forumsForUser } from "@/lib/store";
 import InvitePanel from "@/components/InvitePanel";
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   const userId = getSessionUserId();
   if (!userId) redirect("/login");
-  const user = findUserById(userId)!;
-  const { owned, memberOf } = forumsForUser(userId);
+  const user = await findUserById(userId);
+  if (!user) redirect("/login");
+  const { owned, memberOf } = await forumsForUser(userId);
 
   return (
     <div>

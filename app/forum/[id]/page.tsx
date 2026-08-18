@@ -3,12 +3,12 @@ import { getForum, isMember } from "@/lib/store";
 import { getSessionUserId } from "@/lib/session";
 import ForumThreads from "@/components/ForumThreads";
 
-export default function ForumPage({ params }: { params: { id: string } }) {
-  const forum = getForum(params.id);
+export default async function ForumPage({ params }: { params: { id: string } }) {
+  const forum = await getForum(params.id);
   if (!forum) notFound();
 
   const userId = getSessionUserId();
-  const member = userId ? isMember(forum.id, userId) : false;
+  const member = userId ? await isMember(forum.id, userId) : false;
 
   const canView =
     forum.visitorAccess !== "NONE" || member || forum.ownerId === userId;

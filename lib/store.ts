@@ -1,239 +1,161 @@
 import { randomUUID } from "crypto";
+import { prisma } from "./prisma";
 import type {
   User, Forum, ForumMember, Thread, Post, Invite, Advertisement,
 } from "./types";
 
 // ------------------------------------------------------------------
-// שכבת נתונים זמנית בזיכרון - כדי שהמערכת תרוץ מיד בלי הקמת בסיס נתונים.
-// כל פונקציה כאן מבודדת בכוונה, כך שהמעבר לבסיס נתונים אמיתי (ראה
-// prisma/schema.prisma) הוא בעיקר החלפת הגוף של הפונקציות למטה
-// בשאילתות Prisma מקבילות - שאר האפליקציה לא צריכה להשתנות.
-// שים לב: מידע כאן נמחק בכל הפעלה מחדש של השרת.
+// שכבת גישה לנתונים - עכשיו מגובה על ידי Postgres אמיתי דרך Prisma.
+// כל הפונקציות כאן async והשמות/החתימות תואמים למה שהיה בגרסת הפיתוח
+// עם המערך בזיכרון, כדי שקוד קורא ישאר קריא - רק נוסף await בקריאות.
 // ------------------------------------------------------------------
 
-interface DB {
-  users: User[];
-  forums: Forum[];
-  members: ForumMember[];
-  threads: Thread[];
-  posts: Post[];
-  invites: Invite[];
-  ads: Advertisement[];
-  onlineUserIds: Set<string>;
-}
-
-const g = globalThis as unknown as { __forumDB?: DB };
-
-function seed(): DB {
-  const now = new Date().toISOString();
-  const demoUser: User = {
-    id: "u_demo",
-    name: "משתמש לדוגמה",
-    email: "demo@example.com",
-    passwordHash: undefined,
-    isBlocked: false,
-    createdAt: now,
-  };
-  const forum1: Forum = {
-    id: "f_1",
-    title: "הלכה ומנהג",
-    description: "שאלות ותשובות בענייני הלכה יומיומית",
-    ownerId: demoUser.id,
-    memberAccess: "VIEW_AND_EDIT",
-    visitorAccess: "VIEW_ONLY",
-    isBlocked: false,
-    createdAt: now,
-  };
-  const forum2: Forum = {
-    id: "f_2",
-    title: "עזרה הדדית בקהילה",
-    description: "פורום סגור לחברי הקהילה בלבד",
-    ownerId: demoUser.id,
-    memberAccess: "VIEW_AND_EDIT",
-    visitorAccess: "NONE",
-    isBlocked: false,
-    createdAt: now,
-  };
-  const thread1: Thread = {
-    id: "t_1",
-    forumId: forum1.id,
-    title: "אלו סוגי כלים אסורים לטלטל משום מוקצה מחמת חסרון כיס?",
-    authorId: demoUser.id,
-    isBlocked: false,
-    createdAt: now,
-  };
-  const post1: Post = {
-    id: "p_1",
-    threadId: thread1.id,
-    authorId: demoUser.id,
-    contentHtml: "<p>לדוגמה: כלים חדים, כלי כתיבה יקרים וכדומה - יש להרחיב בהמשך.</p>",
-    isBlurred: false,
-    createdAt: now,
-  };
-
-  return {
-    users: [demoUser],
-    forums: [forum1, forum2],
-    members: [
-      { userId: demoUser.id, forumId: forum1.id, role: "OWNER", notifyOnReply: true, notifyOnMention: true },
-      { userId: demoUser.id, forumId: forum2.id, role: "OWNER", notifyOnReply: true, notifyOnMention: true },
-    ],
-    threads: [thread1],
-    posts: [post1],
-    invites: [],
-    ads: [],
-    onlineUserIds: new Set([demoUser.id]),
-  };
-}
-
-export function db(): DB {
-  if (!g.__forumDB) g.__forumDB = seed();
-  return g.__forumDB;
-}
-
-export const uid = () => randomUUID();
-
 // ---------- Users ----------
-export function findUserById(id: string) {
-  return db().users.find((u) => u.id === id);
+export async function findUserById(id: string) {
+  return prisma.user.findUnique({ where: { id } }) as unknown as Promise<User | null>;
 }
-export function findUserByGoogleId(googleId: string) {
-  return db().users.find((u) => u.googleId === googleId);
+export async function findUserByEmail(email: string) {
+  return prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  }) as unknown as Promise<User | null>;
 }
-export function findUserByEmail(email: string) {
-  return db().users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+export async function findUserByGoogleId(googleId: string) {
+  return prisma.user.findUnique({ where: { googleId } }) as unknown as Promise<User | null>;
 }
-export function createUser(u: Omit<User, "id" | "createdAt" | "isBlocked">) {
-  const user: User = { ...u, id: uid(), createdAt: new Date().toISOString(), isBlocked: false };
-  db().users.push(user);
-  return user;
+export async function createUser(u: Omit<User, "id" | "createdAt" | "isBlocked">) {
+  return prisma.user.create({ data: { ...u } }) as unknown as Promise<User>;
+}
+export async function listAllUsers() {
+  return prisma.user.findMany({ orderBy: { createdAt: "desc" } }) as unknown as Promise<User[]>;
 }
 
 // ---------- Forums ----------
-export function listForums() {
-  return db().forums;
+export async function listForums() {
+  return prisma.forum.findMany({ orderBy: { createdAt: "desc" } }) as unknown as Promise<Forum[]>;
 }
-export function getForum(id: string) {
-  return db().forums.find((f) => f.id === id);
+export async function getForum(id: string) {
+  return prisma.forum.findUnique({ where: { id } }) as unknown as Promise<Forum | null>;
 }
-export function createForum(f: Omit<Forum, "id" | "createdAt" | "isBlocked">) {
-  const forum: Forum = { ...f, id: uid(), createdAt: new Date().toISOString(), isBlocked: false };
-  db().forums.push(forum);
-  db().members.push({ userId: f.ownerId, forumId: forum.id, role: "OWNER", notifyOnReply: true, notifyOnMention: true });
-  return forum;
+export async function createForum(f: Omit<Forum, "id" | "createdAt" | "isBlocked">) {
+  const forum = await prisma.forum.create({ data: { ...f } });
+  await prisma.forumMember.create({
+    data: { forumId: forum.id, userId: f.ownerId, role: "OWNER", notifyOnReply: true, notifyOnMention: true },
+  });
+  return forum as Forum;
 }
-export function forumsForUser(userId: string) {
-  const memberForumIds = new Set(db().members.filter((m) => m.userId === userId).map((m) => m.forumId));
-  const all = db().forums;
-  return {
-    owned: all.filter((f) => f.ownerId === userId),
-    memberOf: all.filter((f) => memberForumIds.has(f.id) && f.ownerId !== userId),
-  };
+export async function forumsForUser(userId: string) {
+  const [owned, memberships] = await Promise.all([
+    prisma.forum.findMany({ where: { ownerId: userId } }),
+    prisma.forumMember.findMany({ where: { userId }, include: { forum: true } }),
+  ]);
+  const memberOf = memberships.map((m) => m.forum).filter((f) => f.ownerId !== userId);
+  return { owned: owned as Forum[], memberOf: memberOf as Forum[] };
 }
-export function isMember(forumId: string, userId: string) {
-  return db().members.some((m) => m.forumId === forumId && m.userId === userId);
+export async function isMember(forumId: string, userId: string) {
+  const row = await prisma.forumMember.findUnique({
+    where: { forumId_userId: { forumId, userId } },
+  });
+  return !!row;
 }
 
 // ---------- Threads / Posts ----------
-export function listThreads(forumId: string) {
-  return db().threads.filter((t) => t.forumId === forumId);
+export async function listThreads(forumId: string) {
+  return prisma.thread.findMany({ where: { forumId }, orderBy: { createdAt: "asc" } }) as unknown as Promise<Thread[]>;
 }
-export function createThread(t: Omit<Thread, "id" | "createdAt" | "isBlocked">) {
-  const thread: Thread = { ...t, id: uid(), createdAt: new Date().toISOString(), isBlocked: false };
-  db().threads.push(thread);
-  return thread;
+export async function createThread(t: Omit<Thread, "id" | "createdAt" | "isBlocked">) {
+  return prisma.thread.create({ data: { ...t } }) as unknown as Promise<Thread>;
 }
-export function listPosts(threadId: string) {
-  return db().posts.filter((p) => p.threadId === threadId);
+export async function listPosts(threadId: string) {
+  return prisma.post.findMany({ where: { threadId }, orderBy: { createdAt: "asc" } }) as unknown as Promise<Post[]>;
 }
-export function createPost(p: Omit<Post, "id" | "createdAt" | "isBlurred">) {
-  const post: Post = { ...p, id: uid(), createdAt: new Date().toISOString(), isBlurred: false };
-  db().posts.push(post);
-  return post;
+export async function createPost(p: Omit<Post, "id" | "createdAt" | "isBlurred">) {
+  return prisma.post.create({ data: { ...p } }) as unknown as Promise<Post>;
+}
+export async function getThread(id: string) {
+  return prisma.thread.findUnique({ where: { id } }) as unknown as Promise<Thread | null>;
 }
 
 // ---------- Invites ----------
-export function createInvite(forumId: string, email: string, name?: string) {
-  const invite: Invite = { id: uid(), forumId, email, name, token: uid(), accepted: false };
-  db().invites.push(invite);
-  return invite;
+export async function createInvite(forumId: string, email: string, name?: string) {
+  return prisma.invite.create({
+    data: { forumId, email, name, token: randomUUID() },
+  }) as unknown as Promise<Invite>;
 }
-
-export function findInviteByToken(token: string) {
-  return db().invites.find((i) => i.token === token);
+export async function findInviteByToken(token: string) {
+  return prisma.invite.findUnique({ where: { token } }) as unknown as Promise<Invite | null>;
 }
-export function acceptInvite(token: string, userId: string) {
-  const invite = findInviteByToken(token);
+export async function acceptInvite(token: string, userId: string) {
+  const invite = await findInviteByToken(token);
   if (!invite) return null;
-  if (!isMember(invite.forumId, userId)) {
-    db().members.push({
-      userId, forumId: invite.forumId, role: "MEMBER",
-      notifyOnReply: true, notifyOnMention: true,
+  const already = await isMember(invite.forumId, userId);
+  if (!already) {
+    await prisma.forumMember.create({
+      data: { forumId: invite.forumId, userId, role: "MEMBER", notifyOnReply: true, notifyOnMention: true },
     });
   }
-  invite.accepted = true;
+  await prisma.invite.update({ where: { token }, data: { accepted: true } });
   return invite;
 }
 
 // חברי פורום שביקשו לקבל התראת מייל על תגובה חדשה (לא כולל את הכותב עצמו)
-export function notifiableMembers(forumId: string, excludeUserId: string) {
-  const memberRows = db().members.filter(
-    (m) => m.forumId === forumId && m.notifyOnReply && m.userId !== excludeUserId
-  );
-  return memberRows
-    .map((m) => db().users.find((u) => u.id === m.userId))
-    .filter((u): u is User => !!u);
+export async function notifiableMembers(forumId: string, excludeUserId: string) {
+  const rows = await prisma.forumMember.findMany({
+    where: { forumId, notifyOnReply: true, userId: { not: excludeUserId } },
+    include: { user: true },
+  });
+  return rows.map((r) => r.user) as User[];
 }
 
 // ---------- Ads ----------
-export function listAds() {
-  return db().ads;
+export async function listAds() {
+  return prisma.advertisement.findMany({ orderBy: { createdAt: "desc" } }) as unknown as Promise<Advertisement[]>;
 }
-export function createAd(a: Omit<Advertisement, "id" | "createdAt" | "status">) {
-  const ad: Advertisement = { ...a, id: uid(), createdAt: new Date().toISOString(), status: "PENDING" };
-  db().ads.push(ad);
-  return ad;
+export async function createAd(a: Omit<Advertisement, "id" | "createdAt" | "status">) {
+  return prisma.advertisement.create({ data: { ...a, status: "PENDING" } }) as unknown as Promise<Advertisement>;
 }
-export function setAdStatus(id: string, status: Advertisement["status"]) {
-  const ad = db().ads.find((a) => a.id === id);
-  if (ad) ad.status = status;
-  return ad;
+export async function setAdStatus(id: string, status: Advertisement["status"]) {
+  return prisma.advertisement.update({ where: { id }, data: { status } }) as unknown as Promise<Advertisement>;
 }
-export function deleteAd(id: string) {
-  const arr = db().ads;
-  const i = arr.findIndex((a) => a.id === id);
-  if (i >= 0) arr.splice(i, 1);
+export async function deleteAd(id: string) {
+  await prisma.advertisement.delete({ where: { id } });
 }
 
 // ---------- Admin moderation ----------
-export function setUserBlocked(userId: string, blocked: boolean) {
-  const u = db().users.find((x) => x.id === userId);
-  if (u) u.isBlocked = blocked;
-  return u;
+export async function setUserBlocked(userId: string, blocked: boolean) {
+  return prisma.user.update({ where: { id: userId }, data: { isBlocked: blocked } });
 }
-export function setThreadBlocked(threadId: string, blocked: boolean) {
-  const t = db().threads.find((x) => x.id === threadId);
-  if (t) t.isBlocked = blocked;
-  return t;
+export async function setThreadBlocked(threadId: string, blocked: boolean) {
+  return prisma.thread.update({ where: { id: threadId }, data: { isBlocked: blocked } });
 }
-export function setPostBlurred(postId: string, blurred: boolean) {
-  const p = db().posts.find((x) => x.id === postId);
-  if (p) p.isBlurred = blurred;
-  return p;
+export async function setPostBlurred(postId: string, blurred: boolean) {
+  return prisma.post.update({ where: { id: postId }, data: { isBlurred: blurred } });
 }
-export function setForumBlocked(forumId: string, blocked: boolean) {
-  const f = db().forums.find((x) => x.id === forumId);
-  if (f) f.isBlocked = blocked;
-  return f;
+export async function setForumBlocked(forumId: string, blocked: boolean) {
+  return prisma.forum.update({ where: { id: forumId }, data: { isBlocked: blocked } });
+}
+
+// ---------- Presence (מי מחובר עכשיו) ----------
+// לא צריך להישמר בבסיס הנתונים - זה מידע רגעי בלבד, נשמר בזיכרון התהליך
+// עם תפוגה של 5 דקות. מתעדכן בכל טעינת עמוד (ראה app/layout.tsx).
+const presence = new Map<string, number>();
+const PRESENCE_TTL_MS = 5 * 60 * 1000;
+
+export function touchPresence(userId: string) {
+  presence.set(userId, Date.now());
+}
+function countOnline() {
+  const now = Date.now();
+  let count = 0;
+  for (const [, ts] of presence) if (now - ts < PRESENCE_TTL_MS) count++;
+  return count;
 }
 
 // ---------- Admin stats ----------
-export function adminStats() {
-  const d = db();
-  return {
-    totalUsers: d.users.length,
-    onlineUsers: d.onlineUserIds.size,
-    totalForums: d.forums.length,
-    totalGroups: d.members.length, // חברויות פעילות
-  };
+export async function adminStats() {
+  const [totalUsers, totalForums, totalGroups] = await Promise.all([
+    prisma.user.count(),
+    prisma.forum.count(),
+    prisma.forumMember.count(),
+  ]);
+  return { totalUsers, onlineUsers: countOnline(), totalForums, totalGroups };
 }

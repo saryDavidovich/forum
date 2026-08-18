@@ -48,9 +48,9 @@ export async function GET(req: Request) {
   const profile = await profileRes.json();
   // profile: { sub, email, name, picture, ... }
 
-  let user = findUserByGoogleId(profile.sub) || findUserByEmail(profile.email);
+  let user = (await findUserByGoogleId(profile.sub)) || (await findUserByEmail(profile.email));
   if (!user) {
-    user = createUser({ name: profile.name || profile.email, email: profile.email, googleId: profile.sub });
+    user = await createUser({ name: profile.name || profile.email, email: profile.email, googleId: profile.sub });
   }
   if (user.isBlocked) return failRedirect("החשבון חסום");
 

@@ -39,7 +39,7 @@ npm run dev
 | שליחת מייל הזמנה בפועל | ✅ **מחובר בפועל** - `lib/email.ts` + `app/api/invites/` | רק צריך SENDGRID_API_KEY + EMAIL_FROM |
 | התראת מייל על תגובה חדשה | ✅ **מחובר בפועל** - `app/api/threads/[id]/posts/route.ts` | אותו דבר |
 | התחברות עם Google | ✅ **מחובר בפועל** ב-`app/api/auth/google/` | רק צריך למלא GOOGLE_CLIENT_ID/SECRET + NEXT_PUBLIC_APP_URL בסביבה |
-| בסיס נתונים אמיתי (לא נמחק בכל הפעלה) | `lib/store.ts` מול `prisma/schema.prisma` | הקמת Postgres (Supabase/Neon/Railway) והרצת `prisma migrate` |
+| בסיס נתונים אמיתי (לא נמחק בכל הפעלה) | ✅ **מחובר בפועל** - `lib/store.ts` דרך Prisma | רק צריך DATABASE_URL (בריילוואי - Add PostgreSQL, זה אוטומטי) |
 | אחסון קבצי פרסומות בענן | `app/api/ads/upload/route.ts` | שירות כמו S3 / Cloudinary / Vercel Blob (כרגע נשמר מקומית בשרת - עובד, אבל לא מומלץ בקנה מידה גדול) |
 
 כל אחד מהם מתועד בהערת קוד (comment) בקובץ הרלוונטי עם הסבר מדויק מה להוסיף.
@@ -60,14 +60,22 @@ lib/
 prisma/schema.prisma   סכמת בסיס הנתונים האמיתית, מוכנה למעבר מ-store.ts
 ```
 
-## המעבר לבסיס נתונים אמיתי
-כרגע כל הנתונים ב-`lib/store.ts` (מערך בזיכרון) - נוח לפיתוח אך נמחק בכל הפעלה.
-כש-תרצה לעבור לאמת:
-1. הרם בסיס Postgres (למשל בחינם ב-[supabase.com](https://supabase.com) או [neon.tech](https://neon.tech))
-2. שים את מחרוזת החיבור ב-`DATABASE_URL`
-3. שנה ב-`prisma/schema.prisma` את `provider = "sqlite"` ל-`"postgresql"`
-4. `npx prisma migrate dev`
-5. החלף את גוף הפונקציות ב-`lib/store.ts` בקריאות Prisma מקבילות (המבנה כבר תואם 1:1 לסכמה)
+## בסיס הנתונים - כבר מחובר בפועל
+`lib/store.ts` עכשיו עובד מול Postgres אמיתי דרך Prisma (לא מערך בזיכרון יותר).
+נבדק בפועל מול Postgres מקומי - הרשמה, יצירת פורום, שרשורים והזמנות נשמרים ונשארים.
+
+**בריילוואי זה כמעט אוטומטי לגמרי:**
+1. הוסף PostgreSQL לפרויקט (+ New → Database → Add PostgreSQL)
+2. ריילוואי מזריקה אוטומטית `DATABASE_URL` לאפליקציה
+3. בכל `npm run start`, הסקריפט מריץ קודם `prisma db push` שיוצר/מעדכן את הטבלאות
+   בבסיס הנתונים לפי `prisma/schema.prisma` - אין צורך בשום פעולה ידנית
+
+להרצה מקומית עם Postgres אמיתי (לא sqlite): הרם Postgres (למשל דרך Docker), הגדר
+`DATABASE_URL=postgresql://user:pass@localhost:5432/dbname` ב-`.env.local`, ואז
+`npx prisma db push` פעם אחת כדי ליצור את הטבלאות.
+
+לניהול שינויי סכמה מבוקר יותר בעתיד (עם היסטוריית migrations, מומלץ לצוותים גדולים
+יותר) - אפשר להחליף בהמשך את `db push` ב-`prisma migrate dev` / `migrate deploy`.
 
 ## עיצוב
 העיצוב עוקב אחר הסגנון שהראית בצילום המסך: כפתורים מלבניים עם קצוות חדים (ללא עיגול פינות),

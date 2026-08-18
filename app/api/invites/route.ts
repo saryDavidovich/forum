@@ -10,14 +10,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "נתונים חסרים" }, { status: 400 });
   }
 
-  const forum = getForum(forumId);
+  const forum = await getForum(forumId);
   if (!forum) return NextResponse.json({ error: "פורום לא נמצא" }, { status: 404 });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
 
   const created = await Promise.all(
     invites.map(async (i: { name?: string; email: string }) => {
-      const invite = createInvite(forumId, i.email, i.name);
+      const invite = await createInvite(forumId, i.email, i.name);
       const joinUrl = `${appUrl}/join?token=${invite.token}`;
       await sendEmail({
         to: i.email,

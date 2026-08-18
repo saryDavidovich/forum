@@ -8,10 +8,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  passwordHash?: string;
-  googleId?: string;
+  passwordHash?: string | null;
+  googleId?: string | null;
   isBlocked: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 export interface ForumMember {
@@ -25,12 +25,12 @@ export interface ForumMember {
 export interface Forum {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   ownerId: string;
   memberAccess: MemberAccess;
   visitorAccess: VisitorAccess;
   isBlocked: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 export interface Thread {
@@ -39,7 +39,7 @@ export interface Thread {
   title: string;
   authorId: string;
   isBlocked: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 export interface Post {
@@ -48,14 +48,14 @@ export interface Post {
   authorId: string;
   contentHtml: string;
   isBlurred: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 export interface Invite {
   id: string;
   forumId: string;
   email: string;
-  name?: string;
+  name?: string | null;
   token: string;
   accepted: boolean;
 }
@@ -64,7 +64,7 @@ export interface Advertisement {
   id: string;
   type: AdType;
   url: string;
-  linkUrl?: string;
+  linkUrl?: string | null;
   status: AdStatus;
-  createdAt: string;
+  createdAt: string | Date;
 }
