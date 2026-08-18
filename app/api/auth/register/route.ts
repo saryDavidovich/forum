@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await createUser({ name, email, passwordHash });
 
-  const res = NextResponse.json({ id: user.id, name: user.name, email: user.email });
+  const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, onboarded: user.onboarded });
   res.cookies.set(SESSION_COOKIE_NAME, makeSessionCookieValue(user.id), {
     httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30,
   });

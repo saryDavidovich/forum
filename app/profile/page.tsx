@@ -9,12 +9,26 @@ export default async function ProfilePage() {
   if (!userId) redirect("/login");
   const user = await findUserById(userId);
   if (!user) redirect("/login");
+  if (!user.onboarded) redirect("/onboarding");
   const { owned, memberOf } = await forumsForUser(userId);
 
   return (
     <div>
-      <h2 style={{ marginBottom: 4 }}>הפרופיל שלי</h2>
-      <p style={{ color: "var(--ink-dim)", marginBottom: 24 }}>{user.name} · {user.email}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+          background: user.avatarUrl ? "transparent" : (user.avatarColor || "var(--navy-800)"),
+          display: "flex", alignItems: "center", justifyContent: "center", color: "#f3e6c8", fontSize: 20,
+        }}>
+          {user.avatarUrl
+            ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : (user.displayName || user.name).slice(0, 1)}
+        </div>
+        <div>
+          <h2 style={{ marginBottom: 2 }}>{user.displayName || user.name}</h2>
+          <p style={{ color: "var(--ink-dim)", fontSize: 13 }}>{user.email}{user.bio ? ` · ${user.bio}` : ""}</p>
+        </div>
+      </div>
 
       <section style={{ marginBottom: 32 }}>
         <h3 style={{ marginBottom: 10 }}>הפורומים שיצרתי</h3>

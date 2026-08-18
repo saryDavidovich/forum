@@ -25,7 +25,8 @@ export default function LoginPage() {
     });
     setBusy(false);
     if (!res.ok) { setError((await res.json()).error || "שגיאה"); return; }
-    router.push(next);
+    const data = await res.json();
+    router.push(data.onboarded ? next : "/onboarding");
     router.refresh();
   }
 

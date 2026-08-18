@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   if (!ok) return NextResponse.json({ error: "אימייל או סיסמה שגויים" }, { status: 401 });
   if (user.isBlocked) return NextResponse.json({ error: "החשבון חסום" }, { status: 403 });
 
-  const res = NextResponse.json({ id: user.id, name: user.name, email: user.email });
+  const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, onboarded: user.onboarded });
   res.cookies.set(SESSION_COOKIE_NAME, makeSessionCookieValue(user.id), {
     httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30,
   });

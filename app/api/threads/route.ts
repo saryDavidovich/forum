@@ -4,7 +4,7 @@ import {
   createThread, listThreads, createPost, listPosts, getForum, isMember,
 } from "@/lib/store";
 
-// GET /api/threads?forumId=...  -> רשימת שרשורים בפורום
+// GET /api/threads?forumId=...  -> רשימת אשכולות בפורום
 export async function GET(req: Request) {
   const forumId = new URL(req.url).searchParams.get("forumId");
   if (!forumId) return NextResponse.json({ error: "forumId חסר" }, { status: 400 });
@@ -13,10 +13,10 @@ export async function GET(req: Request) {
   return NextResponse.json(withPosts);
 }
 
-// POST /api/threads  { forumId, title, contentHtml } -> יוצר שרשור + הודעה ראשונה
+// POST /api/threads  { forumId, title, contentHtml, tags?, attachments? } -> יוצר אשכול + הודעה ראשונה
 export async function POST(req: Request) {
   const userId = getSessionUserId();
-  const { forumId, title, contentHtml } = await req.json();
+  const { forumId, title, contentHtml, tags, attachments } = await req.json();
   const forum = await getForum(forumId);
   if (!forum) return NextResponse.json({ error: "פורום לא נמצא" }, { status: 404 });
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "אין לך הרשאה לכתוב בפורום זה" }, { status: 403 });
   }
 
-  const thread = await createThread({ forumId, title, authorId: userId });
-  const post = await createPost({ threadId: thread.id, authorId: userId, contentHtml });
+  const thread = await createThread({ forumId, title, authorId: userId, tags: tags || [] });
+  const post = await createPost({ threadId: thread.id, authorId: userId, contentHtml, attachments: attachments || [] });
   return NextResponse.json({ ...thread, posts: [post] });
 }

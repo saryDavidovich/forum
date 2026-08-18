@@ -54,7 +54,10 @@ export async function GET(req: Request) {
   }
   if (user.isBlocked) return failRedirect("החשבון חסום");
 
-  const res = NextResponse.redirect(`${appUrl}${cookies().get("google_oauth_next")?.value || "/profile"}`);
+  const destination = user.onboarded
+    ? (cookies().get("google_oauth_next")?.value || "/profile")
+    : "/onboarding";
+  const res = NextResponse.redirect(`${appUrl}${destination}`);
   res.cookies.set(SESSION_COOKIE_NAME, makeSessionCookieValue(user.id), {
     httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30,
   });

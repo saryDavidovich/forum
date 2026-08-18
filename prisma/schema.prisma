@@ -1,11 +1,6 @@
-// סכמת בסיס הנתונים המלאה של המערכת.
-// כברירת מחדל מוגדר SQLite כדי שתוכל להריץ מקומית בלי שום שירות חיצוני.
-// לפני עלייה לאוויר עם משתמשים אמיתיים, מומלץ לעבור ל-Postgres (למשל Supabase / Neon / Railway):
-// שנה provider ל-"postgresql" ו-url ל-env("DATABASE_URL") עם מחרוזת חיבור אמיתית.
-
-// הערה: השדות למטה מוגדרים כ-String עם הערה על הערכים האפשריים - זה עובד
-// מצוין גם ב-Postgres, ומאפשר להישאר תואם למבנה שהיה בגרסת הפיתוח.
-// אם תרצה enum אמיתי ברמת בסיס הנתונים בהמשך, אפשר להחליף בקלות.
+// סכמת בסיס הנתונים המלאה של המערכת - Postgres דרך Prisma.
+// השדות "מצב" (status/role/access) מוגדרים כ-String עם הערה על הערכים
+// האפשריים, כדי להישאר גמיש; ה-app הוא זה ששומר על תקינות הערכים.
 
 generator client {
   provider = "prisma-client-js"
@@ -25,41 +20,50 @@ model User {
   createdAt     DateTime  @default(now())
   isBlocked     Boolean   @default(false)
 
-  ownedForums   Forum[]        @relation("ForumOwner")
-  memberships   ForumMember[]
-  threads       Thread[]
-  posts         Post[]
+  // פרופיל אישי - מוגדר במסך ה-onboarding מיד לאחר הרשמה
+  displayName   String?   @unique // השם שמוצג בפורומים - חובה, ייחודי
+  avatarUrl     String?             // תמונת פרופיל (data URL) - אם לא נבחרה, נשתמש בצבע
+  avatarColor   String?             // צבע רקע לעיגול ברירת מחדל (כמו בגוגל)
+  bio           String?             // תיאור קצר, עד 40 תווים (נאכף באפליקציה)
+  onboarded     Boolean   @default(false)
+
+  ownedForums     Forum[]        @relation("ForumOwner")
+  memberships     ForumMember[]
+  threads         Thread[]
+  posts           Post[]
+  joinRequests    JoinRequest[]
 }
 
-// רמת חשיפה לחברים רשומים בפורום
-// רמת חשיפה למבקרים שאינם חברים
 model Forum {
-  id             String        @id @default(cuid())
-  title          String
-  description    String?
-  ownerId        String
-  owner          User          @relation("ForumOwner", fields: [ownerId], references: [id])
-  memberAccess   String        @default("VIEW_AND_EDIT") // VIEW_ONLY | VIEW_AND_EDIT
-  visitorAccess  String        @default("VIEW_ONLY") // NONE | VIEW_ONLY | VIEW_AND_COMMENT
-  isBlocked      Boolean       @default(false) // חסימה על ידי מנהל-על
-  createdAt      DateTime      @default(now())
+  id                  String        @id @default(cuid())
+  title               String
+  description         String?
+  ownerId             String
+  owner               User          @relation("ForumOwner", fields: [ownerId], references: [id])
+  memberAccess        String        @default("VIEW_AND_EDIT") // VIEW_ONLY | VIEW_AND_EDIT
+  visitorAccess       String        @default("VIEW_ONLY") // NONE | VIEW_ONLY | VIEW_AND_COMMENT
+  visitorTitleVisible Boolean       @default(true) // האם מבקרים שאינם חברים רואים את כותרת האשכולות או שהיא מטושטשת
+  allowJoinRequests   Boolean       @default(false) // האם מבקרים יכולים לשלוח בקשת הצטרפות למנהל
+  isBlocked           Boolean       @default(false) // חסימה על ידי מנהל-על
+  createdAt           DateTime      @default(now())
 
-  members        ForumMember[]
-  threads        Thread[]
-  invites        Invite[]
+  members       ForumMember[]
+  threads       Thread[]
+  invites       Invite[]
+  joinRequests  JoinRequest[]
 }
 
 model ForumMember {
-  id            String     @id @default(cuid())
-  forumId       String
-  userId        String
-  role          String     @default("MEMBER") // OWNER | MEMBER
-  notifyOnReply Boolean    @default(true)  // מייל על כל תגובה בפורום
-  notifyOnMention Boolean  @default(true)  // מייל כשמישהו מגיב ישירות לחבר
-  joinedAt      DateTime   @default(now())
+  id              String     @id @default(cuid())
+  forumId         String
+  userId          String
+  role            String     @default("MEMBER") // OWNER | ADMIN | MEMBER
+  notifyOnReply   Boolean    @default(true)
+  notifyOnMention Boolean    @default(true)
+  joinedAt        DateTime   @default(now())
 
-  forum         Forum      @relation(fields: [forumId], references: [id])
-  user          User       @relation(fields: [userId], references: [id])
+  forum           Forum      @relation(fields: [forumId], references: [id])
+  user            User       @relation(fields: [userId], references: [id])
 
   @@unique([forumId, userId])
 }
@@ -76,13 +80,16 @@ model Invite {
   forum     Forum    @relation(fields: [forumId], references: [id])
 }
 
+// "אשכול" = שרשור/דיון בתוך פורום
 model Thread {
   id          String   @id @default(cuid())
   forumId     String
   title       String
   authorId    String
-  isBlocked   Boolean  @default(false) // חסימת שיחה שלמה על ידי מנהל
+  tags        String[] @default([]) // תגיות מתוך רשימה מוגדרת מראש (ראה lib/tags.ts)
+  isBlocked   Boolean  @default(false) // חסימת אשכול שלם על ידי מנהל
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt // מתעדכן אוטומטית - לשימוש במיון "עודכן לאחרונה"
 
   forum       Forum    @relation(fields: [forumId], references: [id])
   author      User     @relation(fields: [authorId], references: [id])
@@ -90,21 +97,53 @@ model Thread {
 }
 
 model Post {
+  id            String   @id @default(cuid())
+  threadId      String
+  authorId      String
+  contentHtml   String   // תוכן עשיר (HTML) מהעורך
+  replyToPostId String?  // אם זו תגובה ישירה להודעה ספציפית - ה-id שלה
+  attachments   String[] @default([]) // קבצים מצורפים (data URL לכל קובץ)
+  isBlurred     Boolean  @default(false) // טשטוש תוכן על ידי מנהל
+  createdAt     DateTime @default(now())
+
+  thread        Thread   @relation(fields: [threadId], references: [id])
+  author        User     @relation(fields: [authorId], references: [id])
+}
+
+// בקשת הצטרפות לפורום סגור, נשלחת ממבקר (שאינו חבר) למנהל/י הפורום
+model JoinRequest {
   id          String   @id @default(cuid())
-  threadId    String
-  authorId    String
-  contentHtml String   // תוכן עשיר (HTML) מהעורך
-  isBlurred   Boolean  @default(false) // טשטוש מילים על ידי מנהל
+  forumId     String
+  userId      String
+  message     String
+  attachments String[] @default([])
+  status      String   @default("PENDING") // PENDING | ACCEPTED | REJECTED
   createdAt   DateTime @default(now())
 
-  thread      Thread   @relation(fields: [threadId], references: [id])
-  author      User     @relation(fields: [authorId], references: [id])
+  forum       Forum    @relation(fields: [forumId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+// פנייה כללית למערכת דרך כפתור "יצירת קשר" - נצפית במסך הניהול (F8)
+model ContactMessage {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  message     String
+  attachments String[] @default([])
+  createdAt   DateTime @default(now())
+}
+
+// הגדרות אתר גלובליות - שורה יחידה (id קבוע)
+model SiteSettings {
+  id                  Int     @id @default(1)
+  classifiedsEnabled  Boolean @default(true) // האם לוח המודעות מוצג בצד הפורומים
 }
 
 model Advertisement {
   id        String   @id @default(cuid())
   type      String   // IMAGE | VIDEO | LINK
-  url       String   // קישור לקובץ (תמונה/וידאו) או לינק חיצוני
+  url       String   // data URL של הקובץ, או קישור חיצוני
   linkUrl   String?  // קישור יעד בעת לחיצה
   status    String   @default("PENDING") // PENDING | APPROVED | REJECTED
   createdAt DateTime @default(now())

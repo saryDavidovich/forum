@@ -6,10 +6,13 @@ import { sendEmail, newReplyEmailHtml } from "@/lib/email";
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const userId = getSessionUserId();
   if (!userId) return NextResponse.json({ error: "יש להתחבר כדי להגיב" }, { status: 401 });
-  const { contentHtml } = await req.json();
+  const { contentHtml, replyToPostId, attachments } = await req.json();
   if (!contentHtml?.trim()) return NextResponse.json({ error: "התוכן ריק" }, { status: 400 });
 
-  const post = await createPost({ threadId: params.id, authorId: userId, contentHtml });
+  const post = await createPost({
+    threadId: params.id, authorId: userId, contentHtml,
+    replyToPostId: replyToPostId || null, attachments: attachments || [],
+  });
 
   const thread = await getThread(params.id);
   if (thread) {
@@ -22,7 +25,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         recipients.map((u) =>
           sendEmail({
             to: u.email,
-            subject: `תגובה חדשה בפורום "${forum.title}"`,
+            subject: `תגובה חדשה באשכול "${thread.title}"`,
             html: newReplyEmailHtml({ forumTitle: forum.title, threadTitle: thread.title, forumUrl, appUrl }),
           })
         )
