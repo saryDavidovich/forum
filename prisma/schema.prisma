@@ -89,7 +89,7 @@ model Thread {
   tags        String[] @default([]) // תגיות מתוך רשימה מוגדרת מראש (ראה lib/tags.ts)
   isBlocked   Boolean  @default(false) // חסימת אשכול שלם על ידי מנהל
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt // מתעדכן אוטומטית - לשימוש במיון "עודכן לאחרונה"
+  updatedAt   DateTime @default(now()) @updatedAt // ברירת מחדל מאפשרת הוספת העמודה גם לטבלה עם שורות קיימות, בלי לאבד מידע
 
   forum       Forum    @relation(fields: [forumId], references: [id])
   author      User     @relation(fields: [authorId], references: [id])
