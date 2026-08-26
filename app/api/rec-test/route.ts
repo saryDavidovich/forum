@@ -14,11 +14,13 @@
 // בשלמות - מה שיבודד את הבעיה (שרת Python/גunicorn/Railway הספציפי מול
 // כל דומיין/פלטפורמה אחרים).
 //
-// שימוש: GET /api/rec-test?url=<כתובת ההקלטה מימות המשיח, מקודדת ב-URL>
-// &filename=<שם קובץ רצוי (אופציונלי)>
-// כתובת ה-url אמורה להיות rec_url אמיתי (או כתובת DownloadFile עם טוקן)
-// שמעתיקים ידנית מלוגים/DB של פרויקט תמלול פון, רק לצורך הניסוי החד-פעמי
-// הזה - אין כאן שום חיבור/תלות בין שני הפרויקטים.
+// שימוש: GET /api/rec-test?url=<כתובת, מקודדת ב-URL>&filename=<שם קובץ רצוי (אופציונלי)>
+// ה-url יכול להיות rec_url/DownloadFile אמיתי של ימות המשיח, אבל גם קישור
+// מעטפת כמו קישור מעקב-קליקים של SendGrid מתוך מייל ישן (u....ct.sendgrid.net/ls/click?...)
+// - fetch() עוקב אחרי redirect-ים אוטומטית, אז אין צורך לפענח את הכתובת
+// הסופית בעצמכם. הבדיקה שלמטה מוודאת בדיעבד (אחרי שה-redirect כבר קרה)
+// שהכתובת שבאמת סיפקה את התוכן היא של ימות המשיח - לא לפני השליפה, כי
+// לפני השליפה אנחנו עוד לא יודעים לאן קישור עטיפה כזה בכלל מוביל.
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -26,35 +28,38 @@ export async function GET(req: Request) {
   const filenameParam = searchParams.get("filename") || "recording.wav";
 
   if (!recUrl) {
-    return new Response("חסר פרמטר url - השתמשו ב-?url=<כתובת ההקלטה מימות המשיח>", { status: 400 });
+    return new Response("חסר פרמטר url - השתמשו ב-?url=<כתובת ההקלטה, או קישור SendGrid ממייל ישן>", { status: 400 });
   }
-
-  // הגנה מינימלית - רק כדי שהניסוי הזה לא יהפוך בטעות ל-proxy פתוח לכל
-  // כתובת שמישהו יבחר. מותאם לדומיין של ימות המשיח בלבד.
-  let parsed: URL;
   try {
-    parsed = new URL(recUrl);
+    new URL(recUrl);
   } catch {
     return new Response("כתובת url לא תקינה", { status: 400 });
-  }
-  if (!/(^|\.)call2all\.co\.il$/i.test(parsed.hostname)) {
-    return new Response(
-      `לניסוי הזה מותר להביא רק מכתובות של call2all.co.il (ימות המשיח), התקבל: ${parsed.hostname}`,
-      { status: 400 }
-    );
   }
 
   let audioBuffer: ArrayBuffer;
   let contentType = "audio/wav";
+  let finalUrl = recUrl;
   try {
-    const upstream = await fetch(recUrl);
+    const upstream = await fetch(recUrl, { redirect: "follow" });
+    finalUrl = upstream.url || recUrl; // הכתובת בפועל אחרי כל ה-redirect-ים
     if (!upstream.ok) {
-      return new Response(`שליפה מימות נכשלה - סטטוס ${upstream.status}`, { status: 502 });
+      return new Response(`שליפה נכשלה - סטטוס ${upstream.status} (כתובת סופית: ${finalUrl})`, { status: 502 });
+    }
+    // הגנה מינימלית - רק כדי שהניסוי הזה לא יהפוך בטעות ל-proxy פתוח לכל
+    // כתובת. נבדק על הכתובת הסופית (אחרי redirect), לא לפני, כי קישורי
+    // מעטפת (SendGrid וכו') לא חושפים את היעד האמיתי לפני השליפה עצמה.
+    const finalHost = new URL(finalUrl).hostname;
+    if (!/(^|\.)call2all\.co\.il$/i.test(finalHost)) {
+      return new Response(
+        `לניסוי הזה מותר רק תוכן שמגיע בסוף מ-call2all.co.il (ימות המשיח). ` +
+        `הכתובת הזו הובילה בפועל אל: ${finalHost}`,
+        { status: 400 }
+      );
     }
     contentType = upstream.headers.get("content-type") || contentType;
     audioBuffer = await upstream.arrayBuffer();
   } catch (e: any) {
-    return new Response(`שגיאה בשליפה מימות: ${e?.message || e}`, { status: 502 });
+    return new Response(`שגיאה בשליפה: ${e?.message || e}`, { status: 502 });
   }
 
   const b64 = Buffer.from(audioBuffer).toString("base64");
@@ -87,6 +92,7 @@ export async function GET(req: Request) {
   <p>${escapedFilename}</p>
   <a id="dl" class="btn" href="data:${contentType};base64,${b64}" download="${escapedFilename}">⬇️ להורדה לחצו כאן</a>
   <div class="meta">גודל בפועל: ${audioBuffer.byteLength.toLocaleString()} בייטים</div>
+  <div class="meta">כתובת סופית (אחרי redirect): ${finalUrl.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string))}</div>
 </div>
 <script>
   document.getElementById('dl').click();
