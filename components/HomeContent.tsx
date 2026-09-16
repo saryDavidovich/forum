@@ -6,7 +6,7 @@ import { formatIsraelTime } from "@/lib/display";
 
 type ForumItem = { id: string; title: string; description: string; access: string };
 type ThreadItem = {
-  id: string; title: string; tags: string[]; updatedAt: string; postCount: number;
+  id: string; title: string; tags: string[]; updatedAt: string; postCount: number; views: number;
   forumId: string; forumTitle: string; titleHidden: boolean; access: string; authorName: string;
   authorAvatarUrl?: string | null; authorAvatarColor?: string | null;
 };
@@ -57,7 +57,7 @@ export default function HomeContent({ forums, threads }: { forums: ForumItem[]; 
 
         <div style={{ display: "grid", gap: 12 }}>
           {filteredThreads.map((t) => (
-            <Link key={t.id} href={`/forum/${t.forumId}`} className="card" style={{ display: "flex", gap: 12, padding: 16 }}>
+            <Link key={t.id} href={`/forum/${t.forumId}/thread/${t.id}`} className="card" style={{ display: "flex", gap: 12, padding: 16 }}>
               <ThreadAvatar name={t.authorName} url={t.authorAvatarUrl} color={t.authorAvatarColor} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
@@ -69,7 +69,7 @@ export default function HomeContent({ forums, threads }: { forums: ForumItem[]; 
                   {t.tags.map((tag) => <span key={tag} className="chip" style={{ fontSize: 11 }}>{tag}</span>)}
                 </div>
                 <div style={{ fontSize: 12, color: "var(--ink-dim)", marginTop: 8 }}>
-                  {t.authorName} · {t.postCount} תגובות · עודכן {formatIsraelTime(t.updatedAt)}
+                  {t.authorName} · {t.postCount} תגובות · {t.views} צפיות · עודכן {formatIsraelTime(t.updatedAt)}
                 </div>
               </div>
             </Link>

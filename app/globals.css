@@ -131,6 +131,15 @@ a.card:hover {
   box-shadow: 0 2px 6px rgba(20, 20, 20, 0.1);
 }
 
+/* שורת אשכול ברשימת פורום/אשכול בודד */
+.thread-row { color: inherit; transition: background 0.1s ease; }
+.thread-row:hover { background: var(--paper-dim); }
+.thread-row .thread-row-title { color: var(--navy-800); }
+
+.post-row { padding: 16px; border-top: 1px solid var(--line); display: flex; gap: 14px; }
+.post-row:first-child { border-top: none; }
+.post-num { color: var(--ink-faint); font-size: 12px; }
+
 /* פס ניווט כהה (כחול) - זהה בצבעו ל-.p-nav באתר המקור.
    משמש גם עבור ה-header של פאנל הניהול (topbar), וגם כ"קומה" השנייה
    של ה-header הראשי (site-nav) */

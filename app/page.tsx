@@ -32,6 +32,7 @@ export default async function HomePage() {
     tags: t.tags,
     updatedAt: t.updatedAt.toISOString(),
     postCount: t.posts.length,
+    views: t.views,
     forumId: t.forum.id,
     forumTitle: t.forum.title,
     titleHidden: !(userId && myForumIds.has(t.forum.id)) && !t.forum.visitorTitleVisible,

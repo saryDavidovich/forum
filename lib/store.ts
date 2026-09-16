@@ -103,13 +103,16 @@ export async function removeForumMember(forumId: string, userId: string) {
 
 // ---------- Threads / Posts ----------
 export async function listThreads(forumId: string) {
-  return prisma.thread.findMany({ where: { forumId }, orderBy: { updatedAt: "desc" } });
+  return prisma.thread.findMany({ where: { forumId }, orderBy: { updatedAt: "desc" }, include: { author: true } });
 }
 export async function createThread(t: { forumId: string; title: string; authorId: string; tags?: string[] }) {
   return prisma.thread.create({ data: { ...t, tags: t.tags || [] } });
 }
 export async function getThread(id: string) {
-  return prisma.thread.findUnique({ where: { id } });
+  return prisma.thread.findUnique({ where: { id }, include: { author: true } });
+}
+export async function incrementThreadViews(id: string) {
+  await prisma.thread.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
 }
 export async function touchThread(threadId: string) {
   await prisma.thread.update({ where: { id: threadId }, data: {} });

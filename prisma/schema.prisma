@@ -88,6 +88,7 @@ model Thread {
   authorId    String
   tags        String[] @default([]) // תגיות מתוך רשימה מוגדרת מראש (ראה lib/tags.ts)
   isBlocked   Boolean  @default(false) // חסימת אשכול שלם על ידי מנהל
+  views       Int      @default(0) // מספר צפיות - עולה בכל טעינה של עמוד האשכול (רק למי שיש לו הרשאת צפייה)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt // ברירת מחדל מאפשרת הוספת העמודה גם לטבלה עם שורות קיימות, בלי לאבד מידע
 
