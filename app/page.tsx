@@ -37,6 +37,8 @@ export default async function HomePage() {
     titleHidden: !(userId && myForumIds.has(t.forum.id)) && !t.forum.visitorTitleVisible,
     access: accessLabel(t.forum),
     authorName: t.author.displayName || t.author.name,
+    authorAvatarUrl: t.author.avatarUrl || null,
+    authorAvatarColor: t.author.avatarColor || null,
   }));
 
   return <HomeContent forums={forumsData} threads={threadsData} />;

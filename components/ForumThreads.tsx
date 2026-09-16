@@ -16,10 +16,9 @@ function AuthorBadge({ author }: { author: Author }) {
   const label = author.displayName || author.name;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+      <div className="avatar-circle" style={{
+        width: 36, height: 36, fontSize: 14,
         background: author.avatarUrl ? "transparent" : (author.avatarColor || "var(--navy-800)"),
-        display: "flex", alignItems: "center", justifyContent: "center", color: "#f3e6c8", fontSize: 14,
       }}>
         {author.avatarUrl ? <img src={author.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : label.slice(0, 1)}
       </div>

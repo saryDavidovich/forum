@@ -106,8 +106,8 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--paper)", zIndex: 9998, overflow: "auto" }}>
       <div className="topbar" style={{ padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ color: "#f3e6c8" }}>ממשק ניהול</h2>
-        <button onClick={onClose} style={{ background: "transparent", color: "#f3e6c8", borderColor: "#f3e6c8" }}>סגירה (Esc)</button>
+        <h2 style={{ color: "var(--header-text)" }}>ממשק ניהול</h2>
+        <button onClick={onClose} style={{ background: "transparent" }}>סגירה (Esc)</button>
       </div>
 
       <div style={{ display: "flex", gap: 8, padding: "16px 24px" }}>

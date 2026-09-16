@@ -8,11 +8,20 @@ type ForumItem = { id: string; title: string; description: string; access: strin
 type ThreadItem = {
   id: string; title: string; tags: string[]; updatedAt: string; postCount: number;
   forumId: string; forumTitle: string; titleHidden: boolean; access: string; authorName: string;
+  authorAvatarUrl?: string | null; authorAvatarColor?: string | null;
 };
 
 function AccessChip({ access }: { access: string }) {
   const color = access === "אתה חבר" ? "var(--ok)" : access === "סגור" ? "var(--danger)" : "var(--ink-dim)";
   return <span className="chip" style={{ color }}>{access}</span>;
+}
+
+function ThreadAvatar({ name, url, color }: { name: string; url?: string | null; color?: string | null }) {
+  return (
+    <div className="avatar-circle" style={{ width: 38, height: 38, fontSize: 15, background: url ? "transparent" : (color || "var(--navy-800)") }}>
+      {url ? <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : name.slice(0, 1)}
+    </div>
+  );
 }
 
 export default function HomeContent({ forums, threads }: { forums: ForumItem[]; threads: ThreadItem[] }) {
@@ -48,17 +57,20 @@ export default function HomeContent({ forums, threads }: { forums: ForumItem[]; 
 
         <div style={{ display: "grid", gap: 12 }}>
           {filteredThreads.map((t) => (
-            <Link key={t.id} href={`/forum/${t.forumId}`} className="card" style={{ display: "block", padding: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-                <h3 style={{ fontSize: 17, filter: t.titleHidden ? "blur(5px)" : "none" }}>{t.title}</h3>
-                <AccessChip access={t.access} />
-              </div>
-              <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6, flexWrap: "wrap" }}>
-                <span className="chip">{t.forumTitle}</span>
-                {t.tags.map((tag) => <span key={tag} className="chip" style={{ fontSize: 11 }}>{tag}</span>)}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--ink-dim)", marginTop: 8 }}>
-                {t.authorName} · {t.postCount} תגובות · עודכן {formatIsraelTime(t.updatedAt)}
+            <Link key={t.id} href={`/forum/${t.forumId}`} className="card" style={{ display: "flex", gap: 12, padding: 16 }}>
+              <ThreadAvatar name={t.authorName} url={t.authorAvatarUrl} color={t.authorAvatarColor} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                  <h3 style={{ fontSize: 17, filter: t.titleHidden ? "blur(5px)" : "none" }}>{t.title}</h3>
+                  <AccessChip access={t.access} />
+                </div>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6, flexWrap: "wrap" }}>
+                  <span className="chip">{t.forumTitle}</span>
+                  {t.tags.map((tag) => <span key={tag} className="chip" style={{ fontSize: 11 }}>{tag}</span>)}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-dim)", marginTop: 8 }}>
+                  {t.authorName} · {t.postCount} תגובות · עודכן {formatIsraelTime(t.updatedAt)}
+                </div>
               </div>
             </Link>
           ))}
@@ -67,7 +79,7 @@ export default function HomeContent({ forums, threads }: { forums: ForumItem[]; 
       </div>
 
       <aside style={{ width: 240, flexShrink: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--ink-dim)" }}>רשימת הפורומים</div>
+        <div className="block-title">רשימת הפורומים</div>
         <div style={{ display: "grid", gap: 8 }}>
           {forums.map((f) => (
             <Link key={f.id} href={`/forum/${f.id}`} className="card" style={{ display: "block", padding: 10 }}>
@@ -82,7 +94,7 @@ export default function HomeContent({ forums, threads }: { forums: ForumItem[]; 
 
       {showCreate && <CreateForumModal onClose={() => setShowCreate(false)} />}
       {showContact && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(15,27,48,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500 }} onClick={() => setShowContact(false)}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(20,20,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500 }} onClick={() => setShowContact(false)}>
           <div className="card" style={{ padding: 24, width: 380 }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ marginBottom: 10 }}>יצירת קשר</h3>
             {contactSent ? (

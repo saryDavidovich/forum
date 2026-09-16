@@ -1,24 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;500;600;700&display=swap');
+/*
+  פלטת עיצוב בהשראת "פורום לתורה" (tora-forum.co.il):
+  כחול נקי + אפור בהיר, גופן מערכת (ללא גופן מותאם אישית - בדיוק כמו באתר המקור),
+  קלפים כמעט-מרובעים עם פינות עדינות מאוד, כותרות-בלוק בכחול עם קו תחתון דק.
+*/
 
 :root {
-  /* פלטה: כחול-חצות עמוק + זהב מושחז, בהשראת תוכנות לימוד עיוניות (לא קרם/טרה-קוטה גנרי) */
-  --navy-950: #0f1b30;
-  --navy-900: #16233d;
-  --navy-800: #1f3358;
-  --navy-700: #2a4370;
-  --gold-600: #a5771f;
-  --gold-500: #c79a34;
-  --gold-100: #f3e6c8;
-  --paper: #f6f4ef;
-  --paper-dim: #ece8dd;
-  --ink: #1c1a15;
-  --ink-dim: #565148;
-  --line: #d8d2c2;
-  --danger: #8c2f2f;
-  --ok: #2f6b3e;
+  /* כחול הניווט הראשי - זהה לצבע ה-nav באתר המקור */
+  --navy-950: #185886;
+  --navy-900: #123f60;
+  /* כחול-קישור/הדגשה - זהה לצבע הקישורים וכותרות הבלוקים באתר המקור */
+  --navy-800: #2577b1;
+  /* כחול בהיר לכפתורי פעולה ראשיים - זהה לצבע הכפתור הראשי באתר המקור */
+  --navy-700: #47a7eb;
+  --navy-600: #3893d6;
 
-  --radius: 0px; /* קצוות חדים, לא מעוגלים - כמו בתוכנה המצורפת */
-  --shadow-card: 0 1px 0 rgba(15, 27, 48, 0.06);
+  /* משמש כצבע ההדגשה השני (במקום "זהב") - פס ציטוט, מדגישים */
+  --gold-600: #123f60;
+  --gold-500: #47a7eb;
+  --gold-100: #bcdef5;
+
+  /* רקע העמוד וכרטיסים - זהה לגוונים באתר המקור */
+  --paper: #ececec;
+  --paper-dim: #e2e2e2;
+  --card-bg: #fefefe;
+
+  --ink: #141414;
+  --ink-dim: #68655e;
+  --ink-faint: #8c8c8c;
+  --line: #dcdcdc;
+
+  --danger: #b82e2e;
+  --ok: #2e7d46;
+
+  --header-bg: #f9f9f9;
+  --header-text: #bcdef5;
+
+  --radius: 0px;      /* בלוקים/כרטיסים - כמעט מרובעים, כמו באתר המקור */
+  --radius-btn: 2px;  /* כפתורים - עיגול עדין מאוד, כמו באתר המקור */
+  --shadow-card: 0 1px 2px rgba(20, 20, 20, 0.06);
 }
 
 * { box-sizing: border-box; }
@@ -29,76 +48,128 @@ html, body {
   background: var(--paper);
   color: var(--ink);
   direction: rtl;
-  font-family: 'Assistant', system-ui, sans-serif;
+  font-family: "Segoe UI", "Helvetica Neue", Helvetica, Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", sans-serif;
 }
 
 h1, h2, h3, .display {
-  font-family: 'Frank Ruhl Libre', serif;
-  font-weight: 700;
-  color: var(--navy-950);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--ink);
   margin: 0;
 }
 
 a { color: inherit; text-decoration: none; }
+a.link, .card h3 { color: var(--navy-800); }
 
-/* --- כפתורים מלבניים, קצוות חדים, בהשראת ה-toolbar בתמונה --- */
-button, .btn {
-  font-family: 'Assistant', sans-serif;
+/* כותרת בלוק - כמו "הודעות אחרונות" / "מאמרים אחרונים" באתר המקור:
+   כחול, קו תחתון דק, בלי הדגשה כבדה */
+.block-title {
+  font-size: 15px;
   font-weight: 600;
-  border: 1px solid var(--navy-800);
-  border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--navy-950);
+  color: var(--navy-800);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--line);
+}
+
+/* --- כפתורים, עיגול עדין מאוד, בהשראת האתר המקור --- */
+button, .btn {
+  font-family: inherit;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: #fff;
+  color: var(--ink);
   padding: 8px 16px;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
-button:hover, .btn:hover { background: var(--navy-900); color: #fff; }
+button:hover, .btn:hover { background: var(--paper-dim); border-color: var(--ink-faint); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
-  background: var(--navy-950);
+  background: var(--navy-700);
   color: #fff;
-  border-color: var(--navy-950);
+  border-color: var(--navy-600);
 }
-.btn-primary:hover { background: var(--gold-600); border-color: var(--gold-600); }
+.btn-primary:hover { background: var(--navy-900); border-color: var(--navy-900); }
 
 .btn-gold {
   background: var(--gold-500);
-  color: var(--navy-950);
-  border-color: var(--gold-600);
+  color: #fff;
+  border-color: var(--navy-600);
 }
 .btn-gold:hover { background: var(--gold-600); color: #fff; }
 
-.btn-danger { border-color: var(--danger); color: var(--danger); background: var(--paper); }
+.btn-danger { border-color: var(--danger); color: var(--danger); background: #fff; }
 .btn-danger:hover { background: var(--danger); color: #fff; }
 
 input, textarea, select {
-  font-family: 'Assistant', sans-serif;
+  font-family: inherit;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-btn);
   padding: 9px 12px;
   font-size: 14px;
   background: #fff;
   color: var(--ink);
 }
 input:focus, textarea:focus, select:focus {
-  outline: 2px solid var(--gold-500);
+  outline: 2px solid var(--navy-700);
   outline-offset: 1px;
 }
 
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+a.card:hover {
+  border-color: var(--navy-700);
+  box-shadow: 0 2px 6px rgba(20, 20, 20, 0.1);
 }
 
+/* פס ניווט כהה (כחול) - זהה בצבעו ל-.p-nav באתר המקור.
+   משמש גם עבור ה-header של פאנל הניהול (topbar), וגם כ"קומה" השנייה
+   של ה-header הראשי (site-nav) */
 .topbar {
   background: var(--navy-950);
-  color: var(--gold-100);
-  border-bottom: 3px solid var(--gold-500);
+  color: var(--header-text);
+  border-bottom: 3px solid var(--navy-700);
+}
+.topbar a, .topbar button { color: var(--header-text); }
+.topbar button, .topbar .btn { border-color: var(--header-text); }
+.topbar button:hover, .topbar .btn:hover { background: rgba(255,255,255,0.12); }
+
+/* קומה עליונה של ה-header - לוגו על רקע בהיר, בדיוק כמו .p-header באתר המקור */
+.site-header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--line);
+}
+.site-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+}
+.site-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--navy-950);
+  letter-spacing: -0.3px;
+}
+
+.site-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .chip {
@@ -107,8 +178,20 @@ input:focus, textarea:focus, select:focus {
   padding: 2px 10px;
   font-size: 12px;
   color: var(--ink-dim);
-  border-radius: var(--radius);
+  border-radius: var(--radius-btn);
   background: var(--paper-dim);
+}
+
+/* עיגול-אווטאר עם ראשי תיבות - בהשראת עיגולי המשתמשים באתר המקור */
+.avatar-circle {
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }

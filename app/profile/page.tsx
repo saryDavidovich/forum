@@ -15,10 +15,9 @@ export default async function ProfilePage() {
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+        <div className="avatar-circle" style={{
+          width: 56, height: 56, fontSize: 20,
           background: user.avatarUrl ? "transparent" : (user.avatarColor || "var(--navy-800)"),
-          display: "flex", alignItems: "center", justifyContent: "center", color: "#f3e6c8", fontSize: 20,
         }}>
           {user.avatarUrl
             ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

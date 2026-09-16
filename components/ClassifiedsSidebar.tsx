@@ -14,7 +14,7 @@ export default function ClassifiedsSidebar() {
 
   return (
     <aside style={{ width: 200, flexShrink: 0 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--ink-dim)" }}>לוח מודעות</div>
+      <div className="block-title">לוח מודעות</div>
       <div style={{ display: "grid", gap: 10 }}>
         {ads.map((ad) => {
           const inner =

@@ -18,24 +18,33 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="he" dir="rtl">
       <body>
-        <header className="topbar" style={{ padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" className="display" style={{ fontSize: 22, color: "#f3e6c8" }}>
-            הפורומים שלנו
-          </Link>
-          <nav style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {user ? (
-              <>
-                <Link href="/profile" className="btn" style={{ background: "transparent", color: "#f3e6c8", borderColor: "#f3e6c8" }}>
-                  {user.name}
-                </Link>
-                <LogoutButton />
-              </>
-            ) : (
-              <Link href="/login" className="btn-gold btn">התחברות / הרשמה</Link>
-            )}
+        <div className="site-header">
+          <div className="site-header-inner">
+            <Link href="/" className="site-logo">
+              🖋️ הפורומים שלנו
+            </Link>
+          </div>
+        </div>
+        <header className="topbar">
+          <nav className="site-nav-inner">
+            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <Link href="/">בית</Link>
+            </div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {user ? (
+                <>
+                  <Link href="/profile" className="btn" style={{ background: "transparent" }}>
+                    {user.name}
+                  </Link>
+                  <LogoutButton />
+                </>
+              ) : (
+                <Link href="/login" className="btn-gold btn">התחברות / הרשמה</Link>
+              )}
+            </div>
           </nav>
         </header>
-        <main style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 20px 80px" }}>
+        <main style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 20px 80px" }}>
           {children}
         </main>
         {/* F8 פותח תיבת קוד מנהל חבויה - לא מופיע שום דבר בממשק עד שלוחצים F8 */}

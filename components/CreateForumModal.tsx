@@ -41,7 +41,7 @@ export default function CreateForumModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, background: "rgba(15,27,48,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, overflow: "auto", padding: 20 }}
+      style={{ position: "fixed", inset: 0, background: "rgba(20,20,20,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, overflow: "auto", padding: 20 }}
       onClick={onClose}
     >
       <form onClick={(e) => e.stopPropagation()} onSubmit={submit} className="card" style={{ padding: 24, width: 460, maxWidth: "90vw" }}>

@@ -44,7 +44,7 @@ export default function AdminGate() {
   return (
     <div
       style={{
-        position: "fixed", inset: 0, background: "rgba(15,27,48,0.55)",
+        position: "fixed", inset: 0, background: "rgba(20,20,20,0.55)",
         display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999,
       }}
       onClick={() => setShowCodeBox(false)}

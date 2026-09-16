@@ -38,11 +38,10 @@ export default function OnboardingPage() {
       <form onSubmit={submit} className="card" style={{ padding: 22 }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
           <label style={{ cursor: "pointer", textAlign: "center" }}>
-            <div style={{
-              width: 84, height: 84, borderRadius: "50%", overflow: "hidden",
+            <div className="avatar-circle" style={{
+              width: 84, height: 84,
               background: avatarUrl ? "transparent" : "var(--navy-800)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#f3e6c8", fontSize: 28, border: "1px solid var(--line)",
+              fontSize: 28, border: "1px solid var(--line)",
             }}>
               {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "+"}
             </div>
